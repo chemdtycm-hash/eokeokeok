@@ -1,0 +1,29 @@
+name: Update Lotto Weekly
+
+on:
+  schedule:
+    - cron: "30 13 * * 6"  # 토요일 22:30 (KST)
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch latest lotto JSON
+        run: |
+          mkdir -p data
+          curl -s https://smok95.github.io/lotto/results/latest.json -o data/latest.json
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/latest.json
+          git commit -m "auto: update latest lotto" || echo "No changes"
+          git push
