@@ -77,6 +77,17 @@
 
     <div class="title-ribbon">★ 이번 회차 추천 ★</div>
 
+    <div class="section" id="deep-analysis-box">
+      <div style="font-size:18px;font-weight:900;color:var(--gold2);margin-bottom:8px;text-align:center;">데이터 심층 분석 반영</div>
+      <div style="color:var(--muted);font-size:13px;line-height:1.6;text-align:left;">
+        <strong style="color:var(--gold2);">전체 누적 강세</strong> · 34, 27, 12, 13, 33, 45, 18, 40, 3, 37<br>
+        <strong style="color:var(--gold2);">최근 30회 HOT</strong> · 27, 15, 38, 1, 3, 16, 24, 31<br>
+        <strong style="color:var(--gold2);">최근 30회 COLD</strong> · 14, 18, 22, 34, 43<br>
+        <strong style="color:var(--gold2);">이번 전략</strong> · 30번대 1~2개, 20번대 1~2개, 40번대 최소 1개, 연속수 0~1쌍
+      </div>
+    </div>
+
+
     <div id="latest-info" style="
       margin:0 auto 14px;
       padding:12px 14px;
@@ -180,49 +191,70 @@
     function buildCandidate(){
       const set = new Set();
 
-      // 1221회 반영: 중간대 과밀 줄이고 고저차/고번호/연속수 강화
-      if(Math.random() < 0.88) set.add(HOT_RECENT[Math.floor(Math.random()*HOT_RECENT.length)]);
-      if(Math.random() < 0.58) set.add(COLD_RECENT[Math.floor(Math.random()*COLD_RECENT.length)]);
-      if(Math.random() < 0.72) set.add(NEXT_TREND.highPool[Math.floor(Math.random()*NEXT_TREND.highPool.length)]);
-      if(Math.random() < 0.48) set.add(OFFICIAL_DB[0].numbers[Math.floor(Math.random()*OFFICIAL_DB[0].numbers.length)]);
+      // 전체 1~1218회 + 최근 30회 + 또바기 흐름을 섞은 후보 생성
+      const allTimeStrong = [34,27,12,13,33,45,18,40,3,37];
+      const recentHot = [27,15,38,1,3,16,24,31];
+      const recentCold = [14,18,22,34,43];
+      const trend30s = [31,32,33,34,35,36,37,38,39];
+      const highPool = [40,41,42,43,44,45];
+      const mid20s = [20,22,24,25,27,28,29];
+      const lowPool = [1,2,3,5,6,7,8,9,10];
 
-      if(Math.random() < 0.64){
-        const a = NEXT_TREND.consecutiveAnchors[Math.floor(Math.random()*NEXT_TREND.consecutiveAnchors.length)];
+      if(Math.random() < 0.92) set.add(recentHot[Math.floor(Math.random()*recentHot.length)]);
+      if(Math.random() < 0.78) set.add(allTimeStrong[Math.floor(Math.random()*allTimeStrong.length)]);
+      if(Math.random() < 0.72) set.add(trend30s[Math.floor(Math.random()*trend30s.length)]);
+      if(Math.random() < 0.80) set.add(highPool[Math.floor(Math.random()*highPool.length)]);
+      if(Math.random() < 0.68) set.add(mid20s[Math.floor(Math.random()*mid20s.length)]);
+      if(Math.random() < 0.55) set.add(lowPool[Math.floor(Math.random()*lowPool.length)]);
+      if(Math.random() < 0.42) set.add(recentCold[Math.floor(Math.random()*recentCold.length)]);
+
+      // 연속수 0~1쌍 후보
+      if(Math.random() < 0.58){
+        const anchors = [14,15,20,21,22,24,27,28,30,31,32,33,38,39,40,41,42,43];
+        const a = anchors[Math.floor(Math.random()*anchors.length)];
         set.add(a);
         if(a < 45) set.add(a + 1);
       }
-
-      // 고저차 확보용 저번호 1개
-      if(Math.random() < 0.70) set.add(1 + Math.floor(Math.random()*10));
 
       return finalizeSet(set);
     }
 
     function scoreSet(nums){
-      const recent = dbFreq(30);
-      const overall = dbFreq(120);
+      const allTimeStrong = [34,27,12,13,33,45,18,40,3,37];
+      const recentHot = [27,15,38,1,3,16,24,31];
+      const recentCold = [14,18,22,34,43];
+
+      const recent = typeof dbFreq === "function" ? dbFreq(30) : {};
+      const overall = typeof dbFreq === "function" ? dbFreq(120) : {};
       let score = 0;
 
       nums.forEach(n => {
-        score += (recent[n] || 0) * 3.5;
-        score += (overall[n] || 0) * 0.25;
-        if(HOT_RECENT.includes(n)) score += 4;
-        if(COLD_RECENT.includes(n)) score += 1.5;
-        if(n === 27 || n === 28) score -= 5;
+        score += (recent[n] || 0) * 2.5;
+        score += (overall[n] || 0) * 0.2;
+        if(allTimeStrong.includes(n)) score += 5;
+        if(recentHot.includes(n)) score += 5;
+        if(recentCold.includes(n)) score += 3;
       });
 
-      const carry = nums.filter(n => OFFICIAL_DB[0].numbers.includes(n)).length;
-      if(carry === 1) score += 7;
-      if(carry === 2) score += 3;
+      // 27, 28은 완전 제외가 아니라 반복 과열만 제어
+      if(nums.includes(27) && nums.includes(28)) score -= 4;
+      if(nums.includes(27) || nums.includes(28)) score += 1;
+
+      const carry = (typeof OFFICIAL_DB !== "undefined" && Array.isArray(OFFICIAL_DB))
+        ? nums.filter(n => OFFICIAL_DB[0].numbers.includes(n)).length
+        : 0;
+      if(carry === 1) score += 5;
+      if(carry === 2) score += 2;
       if(carry >= 3) score -= 8;
 
       const odd = nums.filter(n => n % 2 === 1).length;
       const sum = nums.reduce((a,b)=>a+b,0);
       const gap = nums[5] - nums[0];
-      const consecutive = countConsecutive(nums);
+      const consecutive = typeof countConsecutive === "function" ? countConsecutive(nums) : 0;
       const highCount = nums.filter(n => n >= 40).length;
+      const count20s = nums.filter(n => n >= 20 && n <= 29).length;
+      const count30s = nums.filter(n => n >= 30 && n <= 39).length;
       const midCluster = nums.filter(n => n >= 15 && n <= 38).length;
-      const lowCount = nums.filter(n => n <= 10).length;
       const ranges = [
         nums.filter(n=>n>=1 && n<=10).length,
         nums.filter(n=>n>=11 && n<=20).length,
@@ -230,45 +262,51 @@
         nums.filter(n=>n>=31 && n<=45).length
       ];
 
-      if(odd >= 2 && odd <= 4) score += 4;
-      if(sum >= 95 && sum <= 180) score += 5;
-      if(gap >= 30 && gap <= 44) score += 8;
-      if(gap < 28) score -= 8;
-      if(consecutive >= 1) score += 5;
-      if(highCount >= 1 && highCount <= 2) score += 8;
-      if(highCount === 0) score -= 10;
-      if(lowCount >= 1) score += 4;
-      if(midCluster >= 5) score -= 10;
-      if(ranges.filter(v => v > 0).length >= 3) score += 4;
+      if(odd >= 2 && odd <= 4) score += 6;
+      if(sum >= 105 && sum <= 175) score += 7;
+      if(gap >= 30 && gap <= 44) score += 9;
+      if(gap < 28) score -= 10;
+      if(consecutive >= 1 && consecutive <= 2) score += 5;
+      if(consecutive > 2) score -= 8;
+      if(highCount >= 1 && highCount <= 2) score += 10;
+      if(highCount === 0) score -= 12;
+      if(count20s >= 1 && count20s <= 2) score += 6;
+      if(count30s >= 1 && count30s <= 2) score += 7;
+      if(midCluster >= 5) score -= 9;
+      if(ranges.filter(v => v > 0).length >= 3) score += 6;
 
       return Math.round(score * 10) / 10;
     }
 
     function explainSet(nums){
+      const allTimeStrong = [34,27,12,13,33,45,18,40,3,37];
+      const recentHot = [27,15,38,1,3,16,24,31];
+      const recentCold = [14,18,22,34,43];
+
       const odd = nums.filter(n => n % 2 === 1).length;
       const even = 6 - odd;
       const sum = nums.reduce((a,b)=>a+b,0);
       const gap = nums[5] - nums[0];
-      const consecutive = countConsecutive(nums);
-      const hotHits = nums.filter(n => HOT_RECENT.includes(n));
-      const carryHits = nums.filter(n => OFFICIAL_DB[0].numbers.includes(n));
+      const consecutive = typeof countConsecutive === "function" ? countConsecutive(nums) : 0;
+      const hotHits = nums.filter(n => recentHot.includes(n));
+      const strongHits = nums.filter(n => allTimeStrong.includes(n));
+      const coldHits = nums.filter(n => recentCold.includes(n));
       const highCount = nums.filter(n => n >= 40).length;
-      const ranges = [
-        nums.filter(n=>n>=1 && n<=10).length,
-        nums.filter(n=>n>=11 && n<=20).length,
-        nums.filter(n=>n>=21 && n<=30).length,
-        nums.filter(n=>n>=31 && n<=45).length
-      ];
+      const count20s = nums.filter(n => n >= 20 && n <= 29).length;
+      const count30s = nums.filter(n => n >= 30 && n <= 39).length;
 
       const parts = [];
-      if(hotHits.length) parts.push('최근흐름 ' + hotHits.slice(0,2).join(','));
-      if(carryHits.length) parts.push('이월수 ' + carryHits.join(','));
-      parts.push('고번호 ' + highCount + '개');
-      parts.push('고저차 ' + gap);
+      if(hotHits.length) parts.push('최근 HOT ' + hotHits.slice(0,2).join(','));
+      if(strongHits.length) parts.push('누적강세 ' + strongHits.slice(0,2).join(','));
+      if(coldHits.length) parts.push('COLD보정 ' + coldHits.slice(0,1).join(','));
+      parts.push('20번대 ' + count20s + '개');
+      parts.push('30번대 ' + count30s + '개');
+      parts.push('40번대 ' + highCount + '개');
       parts.push('홀짝 ' + odd + ':' + even);
-      parts.push('구간 ' + ranges.join('-'));
+      parts.push('합계 ' + sum);
+      parts.push('고저차 ' + gap);
       parts.push(consecutive ? '연속수 포함' : '연속수 제외');
-      return parts.slice(0,5).join(' · ');
+      return parts.slice(0,6).join(' · ');
     }
 
     function renderAll(){
