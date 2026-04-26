@@ -1,45 +1,38 @@
-import { getStore } from "@netlify/blobs";
-
-async function fetchLatest() {
-  const url = "https://smok95.github.io/lotto/results/latest.json";
-
-  const res = await fetch(url, {
-    headers: {
-      "user-agent": "Mozilla/5.0 eokeokeok-lotto",
-      "accept": "application/json"
+{
+  "updated": "2026-04-26",
+  "rounds": [
+    {
+      "round": 1221,
+      "numbers": [
+        3,
+        28,
+        31,
+        32,
+        42,
+        45
+      ]
+    },
+    {
+      "round": 1220,
+      "numbers": [
+        7,
+        11,
+        18,
+        25,
+        30,
+        41
+      ]
+    },
+    {
+      "round": 1219,
+      "numbers": [
+        5,
+        15,
+        22,
+        28,
+        33,
+        45
+      ]
     }
-  });
-
-  const data = await res.json();
-
-  return {
-    round: Number(data.no ?? data.round ?? data.drwNo),
-    date: data.date ?? data.drwNoDate ?? "",
-    numbers: (data.numbers ?? data.nums ?? [
-      data.drwtNo1, data.drwtNo2, data.drwtNo3,
-      data.drwtNo4, data.drwtNo5, data.drwtNo6
-    ]).slice(0, 6).map(Number),
-    bonus: Number(data.bonus ?? data.bnusNo ?? data.numbers?.[6] ?? 0),
-    source: "smok95-github-json",
-    fetchedAt: new Date().toISOString()
-  };
+  ]
 }
-
-export default async () => {
-  const latest = await fetchLatest();
-
-  const store = getStore("lotto");
-  await store.setJSON("latest", latest);
-
-  return new Response(JSON.stringify({
-    ok: true,
-    message: "latest lotto result updated",
-    latest
-  }), {
-    headers: { "content-type": "application/json; charset=utf-8" }
-  });
-};
-
-export const config = {
-  schedule: "30 13 * * 6"
-};
