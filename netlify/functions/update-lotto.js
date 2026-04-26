@@ -11,15 +11,21 @@ function estimateLatestRound() {
 
 async function fetchRound(round) {
   const url = `https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${round}`;
-  const res = await fetch(url, {
-    headers: {
-      "user-agent": "Mozilla/5.0 eokeokeok-lotto-bot"
-    }
-  });
+const res = await fetch(url, {
+  headers: {
+    "user-agent": "Mozilla/5.0",
+    "accept": "application/json"
+  }
+});
 
-  if (!res.ok) return null;
+const text = await res.text();
 
-  const data = await res.json();
+// JSON인지 확인
+if (!text.startsWith("{")) {
+  throw new Error("API 응답이 JSON이 아님 (차단됨)");
+}
+
+const data = JSON.parse(text);
   if (data.returnValue !== "success") return null;
 
   return {
