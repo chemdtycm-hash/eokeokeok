@@ -77,6 +77,22 @@
 
     <div class="title-ribbon">★ 이번 회차 추천 ★</div>
 
+    <div id="latest-info" style="
+      margin:0 auto 14px;
+      padding:12px 14px;
+      border:1.5px solid rgba(234,181,59,.7);
+      border-radius:16px;
+      background:linear-gradient(180deg,#17110a 0%, #080808 100%);
+      color:#f6d36a;
+      font-weight:900;
+      text-align:center;
+      font-size:15px;
+      line-height:1.45;
+    ">
+      최신 데이터 확인 중...
+    </div>
+
+
     <div class="section">
       <div style="font-size:18px;font-weight:900;color:var(--gold2);margin-bottom:8px;text-align:center;">1221회 반영 메모</div>
       <div style="color:var(--muted);font-size:13px;line-height:1.55;text-align:left;">
@@ -343,6 +359,76 @@
 
     renderAll();
   </script>
+
+<script>
+async function loadLatestLottoJson() {
+  try {
+    const res = await fetch("data/latest.json?v=" + Date.now(), { cache: "no-store" });
+    if (!res.ok) throw new Error("latest.json load failed");
+
+    const d = await res.json();
+    const row = Array.isArray(d.rounds) ? d.rounds[0] : d;
+
+    const round = Number(row.no ?? row.round ?? row.drwNo ?? 0);
+    const numbers = (
+      row.numbers ??
+      row.nums ??
+      [row.drwtNo1, row.drwtNo2, row.drwtNo3, row.drwtNo4, row.drwtNo5, row.drwtNo6]
+    ).slice(0, 6).map(Number);
+
+    if (!round || numbers.length !== 6 || numbers.some(n => !n)) return;
+
+    window.LATEST_JSON_LOTTO = {
+      round: round,
+      numbers: numbers,
+      bonus: Number(row.bonus ?? row.bnusNo ?? 0),
+      source: row.source ?? "data/latest.json",
+      updated: d.updated ?? row.date ?? row.drwNoDate ?? ""
+    };
+
+    if (Array.isArray(window.OFFICIAL_DB)) {
+      const exists = window.OFFICIAL_DB.some(r => Number(r.round) === round);
+      if (!exists) {
+        window.OFFICIAL_DB.unshift({
+          round: round,
+          numbers: numbers,
+          bonus: window.LATEST_JSON_LOTTO.bonus
+        });
+      }
+    }
+
+    const nextRound = round + 1;
+
+    document.querySelectorAll("body *").forEach(el => {
+      if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
+        el.textContent = el.textContent
+          .replace(/1222회/g, nextRound + "회")
+          .replace(/1221회/g, round + "회");
+      }
+    });
+
+    if (typeof renderAll === "function") renderAll();
+    if (typeof renderSets === "function") renderSets();
+
+    
+    const latestInfo = document.getElementById("latest-info");
+    if (latestInfo) {
+      latestInfo.innerHTML =
+        "✅ " + round + "회 최신 데이터 반영됨<br>" +
+        "<span style='color:#d4bf85;font-size:13px;'>다음 추천 대상: " + nextRound + "회 · 데이터 출처: data/latest.json</span>";
+    }
+
+    console.log("latest lotto json loaded:", window.LATEST_JSON_LOTTO);
+
+  } catch (err) {
+    console.warn("latest.json을 읽지 못해 내장 데이터로 실행합니다.", err);
+  }
+}
+
+loadLatestLottoJson();
+</script>
+
+
 <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", function () {
@@ -350,5 +436,6 @@ if ("serviceWorker" in navigator) {
   });
 }
 </script>
+
 </body>
 </html>
