@@ -485,29 +485,74 @@ if ("serviceWorker" in navigator) {
 
 
 <script>
-// 🔥 완전 쏠림 제거 엔진 (15,16 포함 과출현 방지)
-function buildCandidate(){
-  const set = new Set();
+// 🔥 자동 학습 + 최신 반영 시스템
 
-  const avoidPair = [15,16];
+let DRAW_DB = [];
+
+// 최신 데이터 + 누적
+async function loadAllData(){
+  try{
+    const res = await fetch("data/latest.json?v=" + Date.now());
+    const d = await res.json();
+
+    if(d.draw_no){
+      DRAW_DB = [{numbers:d.numbers}];
+    }else if(d.rounds){
+      DRAW_DB = d.rounds;
+    }
+
+  }catch(e){
+    console.log("데이터 로딩 실패");
+  }
+}
+
+// 빈도 계산
+function calcFreq(){
+  const freq = {};
+  DRAW_DB.forEach(r=>{
+    (r.numbers||[]).forEach(n=>{
+      freq[n] = (freq[n]||0)+1;
+    });
+  });
+  return freq;
+}
+
+// HOT / COLD 자동 생성
+function getHotCold(){
+  const freq = calcFreq();
+  const sorted = Object.entries(freq).sort((a,b)=>b[1]-a[1]);
+
+  const hot = sorted.slice(0,8).map(v=>Number(v[0]));
+  const cold = sorted.slice(-5).map(v=>Number(v[0]));
+
+  return {hot, cold};
+}
+
+// 기존 buildCandidate override
+const oldBuild = buildCandidate;
+
+buildCandidate = function(){
+  const {hot, cold} = getHotCold();
+  const set = new Set();
 
   while(set.size < 6){
     let n = Math.floor(Math.random()*45)+1;
     const arr = [...set];
 
-    // 15,16 강력 제한
-    const count1516 = arr.filter(x => avoidPair.includes(x)).length;
-    if(avoidPair.includes(n) && count1516 >= 1){
-      if(Math.random() < 0.85) continue;
-    }
+    // HOT 제한
+    const hotCount = arr.filter(x=>hot.includes(x)).length;
+    if(hot.includes(n) && hotCount >= 2) continue;
 
-    // 연속수 1쌍 제한 + 특정 구간 제외
+    // 15,16 제한
+    if((n===15 || n===16) && arr.includes(15) && arr.includes(16)) continue;
+
+    // 연속수 제한
     const hasPair = arr.some(x => arr.includes(x+1));
-    if(hasPair && arr.some(x => Math.abs(x-n)==1)) continue;
+    if(hasPair && arr.some(x=>Math.abs(x-n)==1)) continue;
 
-    // 특정 중간구간 과밀 방지
-    const mid = arr.filter(x => x>=15 && x<=38).length;
-    if(n>=15 && n<=38 && mid >=4) continue;
+    // 확률 반영
+    if(Math.random()<0.25) n = hot[Math.floor(Math.random()*hot.length)];
+    if(Math.random()<0.15) n = cold[Math.floor(Math.random()*cold.length)];
 
     set.add(n);
   }
@@ -515,29 +560,8 @@ function buildCandidate(){
   return [...set].sort((a,b)=>a-b);
 }
 
-// 🔥 점수 개선 (전체 데이터 기반 균형)
-function scoreSet(nums){
-  let score = 0;
-
-  const sum = nums.reduce((a,b)=>a+b,0);
-  const odd = nums.filter(n=>n%2).length;
-  const high = nums.filter(n=>n>=40).length;
-  const low = nums.filter(n=>n<=10).length;
-  const consecutive = nums.some((n,i)=> nums[i+1] === n+1);
-
-  if(sum >= 100 && sum <= 170) score += 25;
-  if(odd >= 2 && odd <= 4) score += 20;
-  if(high >= 1 && high <= 2) score += 20;
-  if(low >= 1 && low <= 2) score += 10;
-
-  if(consecutive) score += 8;
-
-  // 🔥 15,16 강력 패널티
-  if(nums.includes(15) && nums.includes(16)) score -= 40;
-  if(nums.includes(15) || nums.includes(16)) score -= 10;
-
-  return score;
-}
+// 초기 실행
+loadAllData();
 </script>
 
 </body>
