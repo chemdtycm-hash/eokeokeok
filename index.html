@@ -483,5 +483,37 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
+
+<script>
+function generateWeeklySummary(){
+  const hot = [27,15,38,1,3,16,24,31].slice(0,3).join(", ");
+  const cold = [14,18,22,34,43].slice(0,2).join(", ");
+  const strong = [34,27,12,13,33,45,18,40,3,37].slice(0,3).join(", ");
+
+  return `
+  <strong style="color:var(--gold2);">이번주 흐름 요약</strong><br>
+  전체 강세: ${strong}<br>
+  HOT 흐름: ${hot}<br>
+  COLD 보정: ${cold}<br>
+  전략: 30번대 유지 + 40번대 보강 + 연속수 0~1쌍
+  `;
+}
+
+function applyWeeklySummary(){
+  const box = document.getElementById("deep-analysis-box");
+  if(!box) return;
+  box.innerHTML = `
+    <div style="font-size:18px;font-weight:900;color:var(--gold2);margin-bottom:8px;text-align:center;">
+      데이터 심층 분석 + 이번주 흐름
+    </div>
+    <div style="color:var(--muted);font-size:13px;line-height:1.6;text-align:left;">
+      ${generateWeeklySummary()}
+    </div>
+  `;
+}
+
+applyWeeklySummary();
+</script>
+
 </body>
 </html>
