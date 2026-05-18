@@ -241,7 +241,7 @@
       const overCount = nums.filter(n => overHeat.includes(n)).length;
 
       if(overCount >= 2) score -= 18;
-      if(nums.includes(27)) score -= 10;
+      if(nums.includes(27)) score -= 14;
       if(nums.includes(18)) score -= 8;
       if(nums.includes(44) && nums.includes(45)) score -= 12;
 
@@ -285,7 +285,11 @@ const odd = nums.filter(n => n % 2 === 1).length;
       if(count20s >= 1 && count20s <= 2) score += 6;
       if(count30s >= 1 && count30s <= 2) score += 7;
       if(midCluster >= 5) score -= 9;
-      if(ranges.filter(v => v > 0).length >= 3) score += 6;
+      
+      const uniqueRanges = ranges.filter(v => v > 0).length;
+      if(uniqueRanges >= 3) score += 8;
+      if(uniqueRanges <= 2) score -= 10;
+
 
       return Math.round(score * 10) / 10;
     }
@@ -334,7 +338,7 @@ const odd = nums.filter(n => n % 2 === 1).length;
 
       const candidates = [];
       const seen = new Set();
-      for(let i=0;i<500;i++) {
+      for(let i=0;i<120;i++) {
         const nums = buildCandidate();
         const key = nums.join('-');
         if(seen.has(key)) continue;
@@ -400,7 +404,9 @@ const odd = nums.filter(n => n % 2 === 1).length;
     }
 
     function rerollByFortune(){
-      renderAll();
+      setTimeout(() => {
+  renderAll();
+}, 10);
       if(recommendedClicks > 0){
         currentClicks += 1;
         const done = Math.min(currentClicks, recommendedClicks);
@@ -414,12 +420,23 @@ const odd = nums.filter(n => n % 2 === 1).length;
       }
     }
 
-    renderAll();
+    setTimeout(() => {
+  renderAll();
+}, 10);
   </script>
 
 
 
 <script>
+
+window.addEventListener('DOMContentLoaded', () => {
+  const latestInfo = document.getElementById("latest-info");
+  if(latestInfo){
+    latestInfo.innerHTML =
+      "⚡ 추천 분석 준비 완료<br><span style='color:#d4bf85;font-size:13px;'>빠른 추천 모드 활성화</span>";
+  }
+});
+
 async function loadLatestLottoJson() {
   const latestInfo = document.getElementById("latest-info");
 
@@ -440,7 +457,7 @@ async function loadLatestLottoJson() {
   // 2. 백그라운드 최신 확인
   try {
     latestInfo.innerHTML =
-      "⚡ AI 패턴 분석 로딩중...<br><span style='color:#d4bf85;font-size:13px;'>최신 회차 동기화 확인중</span>";
+      "⚡ 최신 분석 데이터 불러오는중...";
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 4000);
