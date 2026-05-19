@@ -50,13 +50,40 @@
     .game-row:last-child{margin-bottom:0}
     .game-top{display:grid; grid-template-columns:52px 1fr; gap:6px; align-items:center;}
     .game-label{height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:linear-gradient(180deg,#1d1710 0%, #0f0f0f 100%); border:1.5px solid rgba(234,181,59,.72); color:var(--gold2); font-weight:1000; font-size:16px; letter-spacing:-1px;}
-    .balls{display:flex; gap:4px; flex-wrap:nowrap; justify-content:flex-start; align-items:center; overflow:hidden;}
-    .ball{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:1000;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.16);color:#0b0b0b;user-select:none;flex:0 0 auto;}
-    .b1{background:radial-gradient(circle at 35% 32%, #fff7cc 0 10%, #ffd653 14%, #e0ac16 64%, #b17d09 100%)}
-    .b2{background:radial-gradient(circle at 35% 32%, #ffffff 0 14%, #f1f1f1 24%, #dadada 68%, #b7b7b7 100%)}
-    .b3{background:radial-gradient(circle at 35% 32%, #ffd4ce 0 10%, #ff604d 18%, #d51f11 66%, #94150d 100%); color:#100}
-    .b4{background:radial-gradient(circle at 35% 32%, #dfffd7 0 10%, #75df66 18%, #3cab2d 66%, #27711d 100%)}
-    .b5{background:radial-gradient(circle at 35% 32%, #d8eeff 0 10%, #66b5ff 18%, #2d7dd7 66%, #1f5592 100%)}
+    
+    /* 🎨 3D 입체 디자인 및 그림자 스타일 명확화 */
+    .balls{display:flex; gap:6px; flex-wrap:nowrap; justify-content:flex-start; align-items:center; overflow:hidden; padding:4px 0;}
+    .ball{
+      width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:16px; font-weight:1000; color:#fff; user-select:none; flex:0 0 auto;
+      text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4), inset -3px -3px 6px rgba(0,0,0,0.4);
+      position: relative;
+      opacity: 0; /* 애니메이션 실행 전 숨김 처리 */
+    }
+    .ball::before {
+      content: ''; position: absolute; top: 3px; left: 6px; width: 10px; height: 5px;
+      background: rgba(255, 255, 255, 0.5); border-radius: 50%; transform: rotate(-15deg);
+    }
+
+    /* 구형 로또볼 입체 램프 그라디언트 정의 */
+    .b1{background: radial-gradient(circle at 35% 35%, #ffeb60 0%, #e5b400 60%, #a88100 100%); color: #111 !important;} 
+    .b1::before{background: rgba(255,255,255,0.72) !important;}
+    .b2{background: radial-gradient(circle at 35% 35%, #7cbfff 0%, #1e70e4 60%, #0f4699 100%);} 
+    .b3{background: radial-gradient(circle at 35% 35%, #ff837c 0%, #df2517 60%, #9c0f05 100%);} 
+    .b4{background: radial-gradient(circle at 35% 35%, #9e9e9e 0%, #616161 60%, #373737 100%);} 
+    .b5{background: radial-gradient(circle at 35% 35%, #b7f374 0%, #5ba711 60%, #366b03 100%);} 
+
+    /* ✨ 탄성 통통 팝 애니메이션 가동 연출 */
+    @keyframes ballPop {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.18); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .ball-pop {
+      animation: ballPop 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
     .analysis-line{margin-top:10px; padding-top:10px; border-top:1px solid rgba(234,181,59,.25); text-align:left; color:var(--muted); font-size:13px; line-height:1.55; letter-spacing:-.2px;}
     .analysis-line strong{color:var(--gold2)}
     .refresh{width:100%; margin:14px 0 0; padding:18px 18px; border:none; border-radius:24px; background:linear-gradient(180deg,#f0c14b 0%, #cd9723 100%); color:#1d1200; font-size:30px; font-weight:1000; letter-spacing:-1.4px; box-shadow:0 16px 26px rgba(205,151,35,.22), inset 0 2px 0 rgba(255,255,255,.28);}
@@ -83,7 +110,7 @@
         <strong style="color:var(--gold2);">최근 유지 흐름</strong> · 20번대 유지, 연속수 0~1쌍, 30번대 중심<br>
         <strong style="color:var(--gold2);">최근 과열 번호</strong> · 18, 27, 44, 45<br>
         <strong style="color:var(--gold2);">복귀 가능 구간</strong> · 34~41 구간 재등장 가능성<br>
-        <strong style="color:var(--gold2);">이번 전략</strong> · 과열번호 최대 1개, 40번대 0~1개, 구조 중심 추천
+        <strong style="color:var(--gold2);">이번 전략</strong> · 고정 끝수 매칭, 산술 복잡도(AC) 검증, 소수/3배수 밸런싱
       </div>
     </div>
 
@@ -105,9 +132,7 @@
     <div class="section" id="memo-section">
       <div style="font-size:18px;font-weight:900;color:var(--gold2);margin-bottom:8px;text-align:center;"><span id="memo-round">1221</span>회 반영 메모</div>
       <div style="color:var(--muted);font-size:13px;line-height:1.55;text-align:left;">
-        이번 구매 결과는 <strong style="color:var(--gold2);">중간대 번호가 몰리고</strong>, 
-        <strong style="color:var(--gold2);">40번대 고번호가 부족한 조합</strong>이 많았다.
-        다음 추천은 고저차, 40번대 1~2개, 연속수 가능성을 더 강하게 반영한다.
+        고성능 필터 탑재 완료: <strong style="color:var(--gold2);">산술 복잡도(AC 7~9) 지표</strong> 및 <strong style="color:var(--gold2);">동형 끝수 매칭 알고리즘</strong>이 계산 엔진에 추가되었습니다. 무작위 패턴을 완전 필터링합니다.
       </div>
     </div>
 
@@ -129,7 +154,7 @@
     <div id="clickGuide" style="margin-top:10px;text-align:center;color:var(--muted);font-size:14px;">오늘의 권장 횟수를 먼저 확인해보세요.</div>
 
     <div class="helper">
-      최근 회차 흐름 기반으로 20번대 유지, 연속수 패턴, 과열번호 냉각, 직전 회차 반복 억제, 고저차, 홀짝 균형을 함께 분석한다.
+      [특수 통계 결합] 최근 30회 흐름과 가중치 연산을 바탕으로 동형 끝수 매칭, 산술적 복잡도(AC 값), 소수 및 3의 배수 출현 확률 밸런스를 엄격히 교정합니다.
     </div>
   </div>
 
@@ -140,17 +165,21 @@
     let cachedFreq30 = null;
     let cachedFreq120 = null;
 
-    const OFFICIAL_DB = [{"round": 1220, "numbers": [2, 22, 25, 28, 34, 43], "bonus": 16}, {"round": 1219, "numbers": [1, 2, 15, 28, 39, 45], "bonus": 31}, {"round": 1218, "numbers": [3, 28, 31, 32, 42, 45], "bonus": 25}, {"round": 1217, "numbers": [8, 10, 15, 20, 29, 31], "bonus": 41}, {"round": 1216, "numbers": [3, 10, 14, 15, 23, 24], "bonus": 25}, {"round": 1215, "numbers": [13, 15, 19, 21, 44, 45], "bonus": 39}, {"round": 1214, "numbers": [10, 15, 19, 27, 30, 33], "bonus": 14}, {"round": 1213, "numbers": [5, 11, 25, 27, 36, 38], "bonus": 2}, {"round": 1212, "numbers": [5, 8, 25, 31, 41, 44], "bonus": 45}, {"round": 1211, "numbers": [23, 26, 27, 35, 38, 40], "bonus": 10}, {"round": 1210, "numbers": [1, 7, 9, 17, 27, 38], "bonus": 31}, {"round": 1209, "numbers": [2, 17, 20, 35, 37, 39], "bonus": 24}, {"round": 1208, "numbers": [6, 27, 30, 36, 38, 42], "bonus": 25}, {"round": 1207, "numbers": [10, 22, 24, 27, 38, 45], "bonus": 11}, {"round": 1206, "numbers": [1, 3, 17, 26, 27, 42], "bonus": 23}, {"round": 1205, "numbers": [1, 4, 16, 23, 31, 41], "bonus": 2}, {"round": 1204, "numbers": [8, 16, 28, 30, 31, 44], "bonus": 27}, {"round": 1203, "numbers": [3, 6, 18, 29, 35, 39], "bonus": 24}, {"round": 1202, "numbers": [5, 12, 21, 33, 37, 40], "bonus": 7}, {"round": 1201, "numbers": [7, 9, 24, 27, 35, 36], "bonus": 37}, {"round": 1200, "numbers": [1, 2, 4, 16, 20, 32], "bonus": 45}, {"round": 1199, "numbers": [16, 24, 25, 30, 31, 32], "bonus": 7}, {"round": 1198, "numbers": [26, 30, 33, 38, 39, 41], "bonus": 21}, {"round": 1197, "numbers": [1, 5, 7, 26, 28, 43], "bonus": 30}, {"round": 1196, "numbers": [8, 12, 15, 29, 40, 45], "bonus": 14}, {"round": 1195, "numbers": [3, 15, 27, 33, 34, 36], "bonus": 37}, {"round": 1194, "numbers": [3, 13, 15, 24, 33, 37], "bonus": 2}, {"round": 1193, "numbers": [6, 9, 16, 19, 24, 28], "bonus": 17}, {"round": 1192, "numbers": [10, 16, 23, 36, 39, 40], "bonus": 11}, {"round": 1191, "numbers": [1, 4, 11, 12, 20, 41], "bonus": 2}, {"round": 1190, "numbers": [7, 9, 19, 23, 26, 45], "bonus": 33}, {"round": 1189, "numbers": [9, 19, 29, 35, 37, 38], "bonus": 31}, {"round": 1188, "numbers": [3, 4, 12, 19, 22, 27], "bonus": 9}, {"round": 1187, "numbers": [5, 13, 26, 29, 37, 40], "bonus": 42}, {"round": 1186, "numbers": [2, 8, 13, 16, 23, 28], "bonus": 35}, {"round": 1185, "numbers": [6, 17, 22, 28, 29, 32], "bonus": 38}, {"round": 1184, "numbers": [14, 16, 23, 25, 31, 37], "bonus": 42}, {"round": 1183, "numbers": [4, 15, 17, 23, 27, 36], "bonus": 31}, {"round": 1182, "numbers": [1, 13, 21, 25, 28, 31], "bonus": 22}, {"round": 1181, "numbers": [8, 10, 14, 20, 33, 41], "bonus": 28}, {"round": 1180, "numbers": [6, 12, 18, 37, 40, 41], "bonus": 3}, {"round": 1179, "numbers": [3, 16, 18, 24, 40, 44], "bonus": 21}, {"round": 1178, "numbers": [5, 6, 11, 27, 43, 44], "bonus": 17}, {"round": 1177, "numbers": [3, 7, 15, 16, 19, 43], "bonus": 21}, {"round": 1176, "numbers": [7, 9, 11, 21, 30, 35], "bonus": 29}, {"round": 1175, "numbers": [3, 4, 6, 8, 32, 42], "bonus": 31}, {"round": 1174, "numbers": [8, 11, 14, 17, 36, 39], "bonus": 22}, {"round": 1173, "numbers": [1, 5, 18, 20, 30, 35], "bonus": 3}, {"round": 1172, "numbers": [7, 9, 24, 40, 42, 44], "bonus": 45}, {"round": 1171, "numbers": [3, 6, 7, 11, 12, 17], "bonus": 19}, {"round": 1170, "numbers": [3, 13, 28, 34, 38, 42], "bonus": 25}, {"round": 1169, "numbers": [5, 12, 24, 26, 39, 42], "bonus": 20}, {"round": 1168, "numbers": [9, 21, 24, 30, 33, 37], "bonus": 29}, {"round": 1167, "numbers": [8, 23, 31, 35, 39, 40], "bonus": 24}, {"round": 1166, "numbers": [14, 23, 25, 27, 29, 42], "bonus": 16}, {"round": 1165, "numbers": [6, 7, 27, 29, 38, 45], "bonus": 17}, {"round": 1164, "numbers": [17, 18, 23, 25, 38, 39], "bonus": 22}, {"round": 1163, "numbers": [2, 13, 15, 16, 33, 43], "bonus": 4}, {"round": 1162, "numbers": [20, 21, 22, 25, 28, 29], "bonus": 6}, {"round": 1161, "numbers": [2, 12, 20, 24, 34, 42], "bonus": 37}, {"round": 1160, "numbers": [7, 13, 18, 36, 39, 45], "bonus": 19}, {"transparent 14%"}, {"round": 1159, "numbers": [3, 9, 27, 28, 38, 39], "bonus": 7}, {"round": 1158, "numbers": [21, 25, 27, 32, 37, 38], "bonus": 20}, {"round": 1157, "numbers": [5, 7, 12, 20, 25, 26], "bonus": 28}, {"round": 1156, "numbers": [30, 31, 34, 39, 41, 45], "bonus": 7}, {"round": 1155, "numbers": [10, 16, 19, 27, 37, 38], "bonus": 13}, {"round": 1154, "numbers": [4, 8, 22, 26, 32, 38], "bonus": 27}, {"round": 1153, "numbers": [1, 9, 10, 13, 35, 44], "bonus": 5}, {"round": 1152, "numbers": [30, 31, 32, 35, 36, 37], "bonus": 5}, {"round": 1151, "numbers": [2, 3, 9, 15, 27, 29], "bonus": 8}, {"round": 1150, "numbers": [8, 9, 18, 35, 39, 45], "bonus": 25}, {"round": 1149, "numbers": [8, 15, 19, 21, 32, 36], "bonus": 38}, {"round": 1148, "numbers": [3, 6, 13, 15, 16, 22], "bonus": 32}, {"round": 1147, "numbers": [7, 11, 24, 26, 27, 37], "bonus": 32}, {"round": 1146, "numbers": [6, 11, 17, 19, 40, 43], "bonus": 28}, {"round": 1145, "numbers": [2, 11, 31, 33, 37, 44], "bonus": 32}, {"round": 1144, "numbers": [3, 4, 12, 15, 26, 34], "bonus": 6}, {"round": 1143, "numbers": [10, 16, 17, 27, 28, 36], "bonus": 6}, {"round": 1142, "numbers": [2, 8, 28, 30, 37, 41], "bonus": 22}, {"round": 1141, "numbers": [7, 11, 12, 21, 26, 35], "bonus": 20}, {"round": 1140, "numbers": [7, 10, 22, 29, 31, 38], "bonus": 15}, {"round": 1139, "numbers": [5, 12, 15, 30, 37, 40], "bonus": 18}, {"round": 1138, "numbers": [14, 16, 19, 20, 29, 34], "bonus": 35}, {"round": 1137, "numbers": [4, 9, 12, 15, 33, 45], "bonus": 26}, {"round": 1136, "numbers": [21, 33, 35, 38, 42, 44], "bonus": 1}, {"round": 1135, "numbers": [1, 6, 13, 19, 21, 33], "bonus": 4}, {"round": 1134, "numbers": [3, 7, 9, 13, 19, 24], "bonus": 23}, {"round": 1133, "numbers": [13, 14, 20, 28, 29, 34], "bonus": 23}, {"round": 1132, "numbers": [6, 7, 19, 28, 34, 41], "bonus": 5}, {"round": 1131, "numbers": [1, 2, 6, 14, 27, 38], "bonus": 33}, {"round": 1130, "numbers": [15, 19, 21, 25, 27, 28], "bonus": 40}, {"round": 1129, "numbers": [5, 10, 11, 17, 28, 34], "bonus": 22}, {"round": 1128, "numbers": [1, 5, 8, 16, 28, 33], "bonus": 45}, {"round": 1127, "numbers": [10, 15, 24, 30, 31, 37], "bonus": 32}, {"round": 1126, "numbers": [4, 5, 9, 11, 37, 40], "bonus": 7}, {"round": 1125, "numbers": [6, 14, 25, 33, 40, 44], "bonus": 30}, {"round": 1124, "numbers": [3, 8, 17, 30, 33, 34], "bonus": 28}, {"round": 1123, "numbers": [13, 19, 21, 24, 34, 35], "bonus": 26}, {"round": 1122, "numbers": [3, 6, 21, 30, 34, 35], "bonus": 22}, {"round": 1121, "numbers": [6, 24, 31, 32, 38, 44], "bonus": 8}, {"round": 1120, "numbers": [2, 19, 26, 31, 38, 41], "bonus": 34}, {"round": 1119, "numbers": [1, 9, 12, 13, 20, 45], "bonus": 3}, {"round": 1118, "numbers": [11, 13, 14, 15, 16, 45], "bonus": 3}, {"round": 1117, "numbers": [3, 4, 9, 30, 33, 36], "bonus": 7}, {"round": 1116, "numbers": [15, 16, 17, 25, 30, 31], "bonus": 32}, {"round": 1115, "numbers": [7, 12, 23, 32, 34, 36], "bonus": 8}, {"round": 1114, "numbers": [10, 16, 19, 32, 33, 38], "bonus": 3}, {"round": 1113, "numbers": [11, 13, 20, 21, 32, 44], "bonus": 8}, {"round": 1112, "numbers": [16, 20, 26, 36, 42, 44], "bonus": 24}, {"round": 1111, "numbers": [3, 13, 30, 33, 43, 45], "bonus": 4}, {"round": 1110, "numbers": [3, 7, 11, 20, 22, 41], "bonus": 24}, {"round": 1109, "numbers": [10, 12, 13, 19, 33, 40], "bonus": 2}, {"round": 1108, "numbers": [7, 19, 26, 37, 39, 44], "bonus": 27}, {"round": 1107, "numbers": [6, 14, 30, 31, 40, 41], "bonus": 29}, {"round": 1106, "numbers": [1, 3, 4, 29, 42, 45], "bonus": 36}, {"round": 1105, "numbers": [6, 16, 34, 37, 39, 40], "bonus": 11}, {"round": 1104, "numbers": [1, 7, 21, 30, 35, 38], "bonus": 2}, {"round": 1103, "numbers": [10, 12, 29, 31, 40, 44], "bonus": 2}, {"round": 1102, "numbers": [13, 14, 22, 26, 37, 38], "bonus": 20}, {"round": 1101, "numbers": [6, 7, 13, 28, 36, 42], "bonus": 41}];
+    const OFFICIAL_DB = [{"round": 1220, "numbers": [2, 22, 25, 28, 34, 43], "bonus": 16}, {"round": 1219, "numbers": [1, 2, 15, 28, 39, 45], "bonus": 31}, {"round": 1218, "numbers": [3, 28, 31, 32, 42, 45], "bonus": 25}, {"round": 1217, "numbers": [8, 10, 15, 20, 29, 31], "bonus": 41}, {"round": 1216, "numbers": [3, 10, 14, 15, 23, 24], "bonus": 25}, {"round": 1215, "numbers": [13, 15, 19, 21, 44, 45], "bonus": 39}, {"round": 1214, "numbers": [10, 15, 19, 27, 30, 33], "bonus": 14}, {"round": 1213, "numbers": [5, 11, 25, 27, 36, 38], "bonus": 2}, {"round": 1212, "numbers": [5, 8, 25, 31, 41, 44], "bonus": 45}, {"round": 1211, "numbers": [23, 26, 27, 35, 38, 40], "bonus": 10}, {"round": 1210, "numbers": [1, 7, 9, 17, 27, 38], "bonus": 31}, {"round": 1209, "numbers": [2, 17, 20, 35, 37, 39], "bonus": 24}, {"round": 1208, "numbers": [6, 27, 30, 36, 38, 42, 25], "bonus": 25}, {"round": 1207, "numbers": [10, 22, 24, 27, 38, 45], "bonus": 11}, {"round": 1206, "numbers": [1, 3, 17, 26, 27, 42], "bonus": 23}, {"round": 1205, "numbers": [1, 4, 16, 23, 31, 41], "bonus": 2}, {"round": 1204, "numbers": [8, 16, 28, 30, 31, 44], "bonus": 27}, {"round": 1203, "numbers": [3, 6, 18, 29, 35, 39], "bonus": 24}, {"round": 1202, "numbers": [5, 12, 21, 33, 37, 40], "bonus": 7}, {"round": 1201, "numbers": [7, 9, 24, 27, 35, 36], "bonus": 37}, {"round": 1200, "numbers": [1, 2, 4, 16, 20, 32], "bonus": 45}, {"round": 1199, "numbers": [16, 24, 25, 30, 31, 32], "bonus": 7}, {"round": 1198, "numbers": [26, 30, 33, 38, 39, 41], "bonus": 21}, {"round": 1197, "numbers": [1, 5, 7, 26, 28, 43], "bonus": 30}, {"round": 1196, "numbers": [8, 12, 15, 29, 40, 45], "bonus": 14}, {"round": 1195, "numbers": [3, 15, 27, 33, 34, 36], "bonus": 37}, {"round": 1194, "numbers": [3, 13, 15, 24, 33, 37], "bonus": 2}, {"round": 1193, "numbers": [6, 9, 16, 19, 24, 28], "bonus": 17}, {"round": 1192, "numbers": [10, 16, 23, 36, 39, 40], "bonus": 11}, {"round": 1191, "numbers": [1, 4, 11, 12, 20, 41], "bonus": 2}, {"round": 1190, "numbers": [7, 9, 19, 23, 26, 45], "bonus": 33}, {"round": 1189, "numbers": [9, 19, 29, 35, 37, 38], "bonus": 31}, {"round": 1188, "numbers": [3, 4, 12, 19, 22, 27], "bonus": 9}, {"round": 1187, "numbers": [5, 13, 26, 29, 37, 40], "bonus": 42}, {"round": 1186, "numbers": [2, 8, 13, 16, 23, 28], "bonus": 35}, {"round": 1185, "numbers": [6, 17, 22, 28, 29, 32], "bonus": 38}, {"round": 1184, "numbers": [14, 16, 23, 25, 31, 37], "bonus": 42}, {"round": 1183, "numbers": [4, 15, 17, 23, 27, 36], "bonus": 31}, {"round": 1182, "numbers": [1, 13, 21, 25, 28, 31], "bonus": 22}, {"round": 1181, "numbers": [8, 10, 14, 20, 33, 41], "bonus": 28}, {"round": 1180, "numbers": [6, 12, 18, 37, 40, 41], "bonus": 3}, {"round": 1179, "numbers": [3, 16, 18, 24, 40, 44], "bonus": 21}, {"round": 1178, "numbers": [5, 6, 11, 27, 43, 44], "bonus": 17}, {"round": 1177, "numbers": [3, 7, 15, 16, 19, 43], "bonus": 21}, {"round": 1176, "numbers": [7, 9, 11, 21, 30, 35], "bonus": 29}, {"round": 1175, "numbers": [3, 4, 6, 8, 32, 42], "bonus": 31}, {"round": 1174, "numbers": [8, 11, 14, 17, 36, 39], "bonus": 22}, {"round": 1173, "numbers": [1, 5, 18, 20, 30, 35], "bonus": 3}, {"round": 1172, "numbers": [7, 9, 24, 40, 42, 44], "bonus": 45}, {"round": 1171, "numbers": [3, 6, 7, 11, 12, 17], "bonus": 19}, {"round": 1170, "numbers": [3, 13, 28, 34, 38, 42], "bonus": 25}, {"round": 1169, "numbers": [5, 12, 24, 26, 39, 42], "bonus": 20}, {"round": 1168, "numbers": [9, 21, 24, 30, 33, 37], "bonus": 29}, {"round": 1167, "numbers": [8, 23, 31, 35, 39, 40], "bonus": 24}, {"round": 1166, "numbers": [14, 23, 25, 27, 29, 42], "bonus": 16}, {"round": 1165, "numbers": [6, 7, 27, 29, 38, 45], "bonus": 17}, {"round": 1164, "numbers": [17, 18, 23, 25, 38, 39], "bonus": 22}, {"round": 1163, "numbers": [2, 13, 15, 16, 33, 43], "bonus": 4}, {"round": 1162, "numbers": [20, 21, 22, 25, 28, 29], "bonus": 6}, {"round": 1161, "numbers": [2, 12, 20, 24, 34, 42], "bonus": 37}, {"round": 1160, "numbers": [7, 13, 18, 36, 39, 45], "bonus": 19}, {"round": 1159, "numbers": [3, 9, 27, 28, 38, 39], "bonus": 7}, {"round": 1158, "numbers": [21, 25, 27, 32, 37, 38], "bonus": 20}, {"round": 1157, "numbers": [5, 7, 12, 20, 25, 26], "bonus": 28}, {"round": 1156, "numbers": [30, 31, 34, 39, 41, 45], "bonus": 7}, {"round": 1155, "numbers": [10, 16, 19, 27, 37, 38], "bonus": 13}, {"round": 1154, "numbers": [4, 8, 22, 26, 32, 38], "bonus": 27}, {"round": 1153, "numbers": [1, 9, 10, 13, 35, 44], "bonus": 5}, {"round": 1152, "numbers": [30, 31, 32, 35, 36, 37], "bonus": 5}, {"round": 1151, "numbers": [2, 3, 9, 15, 27, 29], "bonus": 8}, {"round": 1150, "numbers": [8, 9, 18, 35, 39, 45], "bonus": 25}, {"round": 1149, "numbers": [8, 15, 19, 21, 32, 36], "bonus": 38}, {"round": 1148, "numbers": [3, 6, 13, 15, 16, 22], "bonus": 32}, {"round": 1147, "numbers": [7, 11, 24, 26, 27, 37], "bonus": 32}, {"round": 1146, "numbers": [6, 11, 17, 19, 40, 43], "bonus": 28}, {"round": 1145, "numbers": [2, 11, 31, 33, 37, 44], "bonus": 32}, {"round": 1144, "numbers": [3, 4, 12, 15, 26, 34], "bonus": 6}, {"round": 1143, "numbers": [10, 16, 17, 27, 28, 36], "bonus": 6}, {"round": 1142, "numbers": [2, 8, 28, 30, 37, 41], "bonus": 22}, {"round": 1141, "numbers": [7, 11, 12, 21, 26, 35], "bonus": 20}, {"round": 1140, "numbers": [7, 10, 22, 29, 31, 38], "bonus": 15}, {"round": 1139, "numbers": [5, 12, 15, 30, 37, 40], "bonus": 18}, {"round": 1138, "numbers": [14, 16, 19, 20, 29, 34], "bonus": 35}, {"round": 1137, "numbers": [4, 9, 12, 15, 33, 45], "bonus": 26}, {"round": 1136, "numbers": [21, 33, 35, 38, 42, 44], "bonus": 1}, {"round": 1135, "numbers": [1, 6, 13, 19, 21, 33], "bonus": 4}, {"round": 1134, "numbers": [3, 7, 9, 13, 19, 24], "bonus": 23}, {"round": 1133, "numbers": [13, 14, 20, 28, 29, 34], "bonus": 23}, {"round": 1132, "numbers": [6, 7, 19, 28, 34, 41], "bonus": 5}, {"round": 1131, "numbers": [1, 2, 6, 14, 27, 38], "bonus": 33}, {"round": 1130, "numbers": [15, 19, 21, 25, 27, 28], "bonus": 40}, {"round": 1129, "numbers": [5, 10, 11, 17, 28, 34], "bonus": 22}, {"round": 1128, "numbers": [1, 5, 8, 16, 28, 33], "bonus": 45}, {"round": 1127, "numbers": [10, 15, 24, 30, 31, 37], "bonus": 32}, {"round": 1126, "numbers": [4, 5, 9, 11, 37, 40], "bonus": 7}, {"round": 1125, "numbers": [6, 14, 25, 33, 40, 44], "bonus": 30}, {"round": 1124, "numbers": [3, 8, 17, 30, 33, 34], "bonus": 28}, {"round": 1123, "numbers": [13, 19, 21, 24, 34, 35], "bonus": 26}, {"round": 1122, "numbers": [3, 6, 21, 30, 34, 35], "bonus": 22}, {"round": 1121, "numbers": [6, 24, 31, 32, 38, 44], "bonus": 8}, {"round": 1120, "numbers": [2, 19, 26, 31, 38, 41], "bonus": 34}, {"round": 1119, "numbers": [1, 9, 12, 13, 20, 45], "bonus": 3}, {"round": 1118, "numbers": [11, 13, 14, 15, 16, 45], "bonus": 3}, {"round": 1117, "numbers": [3, 4, 9, 30, 33, 36], "bonus": 7}, {"round": 1116, "numbers": [15, 16, 17, 25, 30, 31], "bonus": 32}, {"round": 1115, "numbers": [7, 12, 23, 32, 34, 36], "bonus": 8}];
     
     const HOT_RECENT = [18,21,27,30,31,32,33,39,44,45];
     const COLD_RECENT = [1,2,5,11,14,17,34,35,36,40,41,42];
 
-    function colorClass(n){
-      if(n <= 10) return 'b1';
-      if(n <= 20) return 'b2';
-      if(n <= 30) return 'b3';
-      if(n <= 40) return 'b4';
-      return 'b5';
+    const LOTTO_PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43];
+
+    function calculateAC(nums) {
+      const differences = new Set();
+      for (let i = 0; i < nums.length; i++) {
+        for (let j = i + 1; j < nums.length; j++) {
+          differences.add(Math.abs(nums[i] - nums[j]));
+        }
+      }
+      return differences.size - (nums.length - 1);
     }
 
     function initDbFreq() {
@@ -224,6 +253,23 @@
         if(recentCold.includes(n)) score += 3;
       });
 
+      const ends = nums.map(n => n % 10);
+      const uniqueEnds = new Set(ends).size;
+      if(uniqueEnds === 6) score -= 8;
+      if(uniqueEnds <= 3) score -= 14;
+      if(uniqueEnds === 4 || uniqueEnds === 5) score += 12; 
+
+      const primeCount = nums.filter(n => LOTTO_PRIMES.includes(n)).length;
+      const multipleOf3Count = nums.filter(n => n % 3 === 0).length;
+      if(primeCount >= 1 && primeCount <= 3) score += 10;
+      else score -= 12;
+      if(multipleOf3Count >= 1 && multipleOf3Count <= 3) score += 10;
+      else score -= 12;
+
+      const acValue = calculateAC(nums);
+      if(acValue >= 7 && acValue <= 9) score += 15; 
+      else score -= 20; 
+
       const overHeat = [18,27,44,45];
       const overCount = nums.filter(n => overHeat.includes(n)).length;
 
@@ -285,25 +331,20 @@
       const recentCold = [1,2,5,11,14,17,34,35,36,40,41];
 
       const odd = nums.filter(n => n % 2 === 1).length;
-      const even = 6 - odd;
       const sum = nums.reduce((a,b)=>a+b,0);
       const gap = nums[5] - nums[0];
       const consecutive = countConsecutive(nums);
       const hotHits = nums.filter(n => recentHot.includes(n));
       const strongHits = nums.filter(n => allTimeStrong.includes(n));
-      const coldHits = nums.filter(n => recentCold.includes(n));
-      const highCount = nums.filter(n => n >= 40).length;
-      const count20s = nums.filter(n => n >= 20 && n <= 29).length;
-      const count30s = nums.filter(n => n >= 30 && n <= 39).length;
+      
+      const acValue = calculateAC(nums);
+      const primeCount = nums.filter(n => LOTTO_PRIMES.includes(n)).length;
 
       const parts = [];
-      if(hotHits.length) parts.push('최근 HOT ' + hotHits.slice(0,2).join(','));
-      if(strongHits.length) parts.push('누적강세 ' + strongHits.slice(0,2).join(','));
-      if(coldHits.length) parts.push('COLD보정 ' + coldHits.slice(0,1).join(','));
-      parts.push('20번대 ' + count20s + '개');
-      parts.push('30번대 ' + count30s + '개');
-      parts.push('40번대 ' + highCount + '개');
-      parts.push('홀짝 ' + odd + ':' + even);
+      parts.push('AC ' + acValue);
+      parts.push('소수 ' + primeCount + '개');
+      if(hotHits.length) parts.push('HOT ' + hotHits.slice(0,1).join(','));
+      if(strongHits.length) parts.push('강세 ' + strongHits.slice(0,1).join(','));
       parts.push('합계 ' + sum);
       parts.push('고저차 ' + gap);
       parts.push(consecutive ? '연속수 포함' : '연속수 제외');
@@ -319,8 +360,8 @@
       const candidates = [];
       const seen = new Set();
       
-      for(let i=0; i<120; i++) {
-        const forced = (i < 40 && currentLuckNumbers.length > 0) ? currentLuckNumbers : [];
+      for(let i=0; i<250; i++) {
+        const forced = (i < 80 && currentLuckNumbers.length > 0) ? currentLuckNumbers : [];
         const nums = buildCandidate(forced);
         const key = nums.join('-');
         if(seen.has(key)) continue;
@@ -336,7 +377,11 @@
             <div class="game-top">
               <div class="game-label">${names[i]}</div>
               <div class="balls">
-                ${item.nums.map(n => `<div class="ball ${colorClass(n)}">${String(n).padStart(2,'0')}</div>`).join('')}
+                ${item.nums.map((n, idx) => `
+                  <div class="ball ball-pop ${colorClass(n)}" style="animation-delay: ${idx * 45}ms">
+                    ${String(n).padStart(2,'0')}
+                  </div>
+                `).join('')}
               </div>
             </div>
             <div class="analysis-line"><strong>${names[i]} 분석</strong> · ${explainSet(item.nums)}</div>
@@ -383,7 +428,7 @@
         '<div><strong style="color:var(--gold2);">권장 버튼 횟수</strong> · ' + recommendedClicks + '번</div>' +
         '<div><strong style="color:var(--gold2);">행운 숫자</strong> · ' + String(luck1).padStart(2,'0') + ', ' + String(luck2).padStart(2,'0') + '</div>' +
         '<div><strong style="color:var(--gold2);">추천 방향</strong> · ' + style + '</div>' +
-        '<div style="margin-top:8px;"><strong style="color:var(--gold2);">오늘의 한마디</strong> · 생성된 행운 번호가 1게임 추천 조합 알고리즘에 즉시 반영됩니다!</div>';
+        '<div style="margin-top:8px;"><strong style="color:var(--gold2);">오늘의 한마디</strong> · 생성된 행운 번호가 AC 값 고난도 필터 연산을 거쳐 추천 조합에 자동 결합됩니다.</div>';
 
       document.getElementById('clickGuide').innerHTML = '오늘은 <strong style="color:var(--gold2);">' + recommendedClicks + '번</strong> 눌러보세요. 현재 0 / ' + recommendedClicks;
       
@@ -412,19 +457,38 @@
   </script>
 
   <script>
+    (function() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (let registration of registrations) {
+            registration.unregister().then(function(boolean) {
+              if(boolean) {
+                console.log('구버전 서비스워커 강제 제거 성공 - 캐시 봉인 해제');
+                window.location.reload(); // 제거 후 깨끗한 상태로 1회 재새로고침 유도
+              }
+            });
+          }
+        });
+        // 캐시 스토리지 전면 클리어
+        if (window.caches) {
+          caches.keys().then(function(names) {
+            for (let name of names) caches.delete(name);
+          });
+        }
+      }
+    })();
+  </script>
+
+  <script>
     async function loadLatestLottoJson() {
       const latestInfo = document.getElementById("latest-info");
-      let currentRoundInView = latestRound;
 
-      // 1. [로컬 캐시 즉시 실행] 기기에 저장된 캐시 데이터가 있다면 즉시 로드
       try {
         const cached = localStorage.getItem("lotto_latest_fast");
         if (cached) {
           const c = JSON.parse(cached);
-          currentRoundInView = c.round;
-          
           latestInfo.innerHTML =
-            "⚡ 빠른 로컬 캐시 로드 완료<br>" +
+            "✅ 기존 동기화 데이터 로드 완료<br>" +
             "<span style='color:#d4bf85;font-size:13px;'>" +
             c.round + "회 · 당첨번호: " + c.numbers.join(", ") +
             "</span>";
@@ -432,20 +496,21 @@
           const memoRound = document.getElementById("memo-round");
           if (memoRound) memoRound.textContent = c.round;
         }
-      } catch (e) {
-        console.log("캐시 읽기 실패");
-      }
+      } catch (e) {}
 
-      // 2. [초고속 CDN 동기화] 무차별 쿼리 제거 및 헤더 제어로 깃허브 CDN 응답 유도
       try {
-        const res = await fetch("data/latest.json", {
+        const uniqueKey = Date.now();
+        const res = await fetch("data/latest.json?v=" + uniqueKey, {
           method: "GET",
+          cache: "no-store",
           headers: {
-            'Cache-Control': 'max-age=600' // 브라우저/CDN 캐시 적극 활용
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
           }
         });
 
-        if (!res.ok) throw new Error("latest.json 불러오기 실패");
+        if (!res.ok) throw new Error("서버 응답 오류");
 
         const d = await res.json();
         const row = Array.isArray(d.rounds) ? d.rounds[0] : d;
@@ -458,9 +523,8 @@
 
         const bonus = Number(row.bonus_no ?? row.bonus ?? row.bnusNo ?? 0);
 
-        if (!round || numbers.length !== 6) throw new Error("데이터 규격 오류");
+        if (!round || numbers.length !== 6) throw new Error("데이터 구조 결함");
 
-        // 3. 백그라운드 실시간 대조 및 주입
         const exists = OFFICIAL_DB.some(r => Number(r.round) === round);
         if (!exists) {
           OFFICIAL_DB.unshift({ round, numbers, bonus });
@@ -472,29 +536,23 @@
         localStorage.setItem("lotto_latest_fast", JSON.stringify(latestData));
 
         latestInfo.innerHTML =
-          "✅ " + round + "회 최신 데이터 반영됨 (GitHub 동기화 완료)<br>" +
-          "<span style='color:#d4bf85;font-size:13px;'>" +
-          "당첨번호: " + numbers.join(", ") +
-          (bonus ? " + 보너스 " + bonus : "") +
-          "</span>";
+          "✅ " + round + "회 실시간 데이터 연동 성공<br>" +
+          "<span style='color:#d4bf85;font-size:13px;'>당첨번호: " + numbers.join(", ") +
+          (bonus ? " + 보너스 " + bonus : "") + "</span>";
 
         const memoRound = document.getElementById("memo-round");
         if (memoRound) memoRound.textContent = round;
 
       } catch (err) {
         console.log("GitHub 최신 동기화 지연 - 기존 캐시 유지");
+        if (!localStorage.getItem("lotto_latest_fast")) {
+          latestInfo.innerHTML =
+            "⚠️ 최신 데이터 읽기 실패<br><span style='color:#d4bf85;font-size:13px;'>내장 데이터로 실행 중</span>";
+        }
       }
     }
 
     loadLatestLottoJson();
-  </script>
-
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", function () {
-        navigator.serviceWorker.register("/sw.js");
-      });
-    }
   </script>
 </body>
 </html>
