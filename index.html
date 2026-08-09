@@ -106,7 +106,15 @@
     .backtest-bar{display:grid;grid-template-columns:42px 1fr 42px;gap:8px;align-items:center;color:var(--muted);font-size:12px;}
     .backtest-track{height:8px;background:#171717;border-radius:999px;overflow:hidden;border:1px solid rgba(234,181,59,.25);}
     .backtest-fill{height:100%;background:linear-gradient(90deg,#d9a62c,#f6d36a);border-radius:999px;}
-    .backtest-run{width:100%;margin-top:10px;padding:12px;border:none;border-radius:16px;background:linear-gradient(180deg,#f0c14b 0%, #cd9723 100%);color:#1d1200;font-size:17px;font-weight:1000;}  </style>
+    .backtest-run{width:100%;margin-top:10px;padding:12px;border:none;border-radius:16px;background:linear-gradient(180deg,#f0c14b 0%, #cd9723 100%);color:#1d1200;font-size:17px;font-weight:1000;}
+    .miss-table{margin-top:10px;display:grid;gap:6px;}
+    .miss-row{display:grid;grid-template-columns:40px 1fr 54px;gap:8px;align-items:center;color:var(--muted);font-size:12px;}
+    .miss-num{color:var(--gold2);font-weight:1000;}
+    .miss-track{height:8px;background:#171717;border-radius:999px;overflow:hidden;border:1px solid rgba(234,181,59,.25);}
+    .miss-fill{height:100%;background:linear-gradient(90deg,#5ba711,#f6d36a);border-radius:999px;}
+    .rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+    .rank-chip{background:#101010;border:1px solid rgba(234,181,59,.35);border-radius:12px;padding:8px;text-align:center;color:var(--muted);font-size:12px;}
+    .rank-chip strong{display:block;color:var(--gold2);font-size:18px;margin-top:2px;}  </style>
 </head>
 <body>
   <div class="coins">
@@ -180,6 +188,13 @@
     </div>
 
 
+
+    <div class="section" id="miss-analysis-section">
+      <div style="font-size:18px;font-weight:900;color:var(--gold2);margin-bottom:8px;text-align:center;">최근 미출현 간격 분석</div>
+      <div id="missAnalysisBox" style="color:var(--muted);font-size:13px;line-height:1.55;text-align:left;">
+        최신 데이터 기준 번호별 미출현 간격을 계산 중입니다.
+      </div>
+    </div>
     <div class="section" id="backtest-section">
       <div style="font-size:18px;font-weight:900;color:var(--gold2);margin-bottom:8px;text-align:center;">백테스트 검증 리포트</div>
       <div id="backtestBox" style="color:var(--muted);font-size:13px;line-height:1.55;text-align:left;">
@@ -598,6 +613,45 @@
       return selectDiverseCandidates(candidates, games).map(v => v.nums);
     }
 
+
+    function getMissingIntervals(history = OFFICIAL_DB){
+      const intervals = [];
+      for(let n=1; n<=45; n++){
+        const index = history.findIndex(r => r.numbers.slice(0, 6).includes(n));
+        intervals.push({ n, gap: index >= 0 ? index : history.length, lastRound: index >= 0 ? history[index].round : null });
+      }
+      return intervals;
+    }
+
+    function getMissingInfo(nums, history = OFFICIAL_DB){
+      const intervals = getMissingIntervals(history);
+      return nums.map(n => intervals.find(v => v.n === n));
+    }
+
+    function renderMissingAnalysis(selectedSets = []){
+      const box = document.getElementById('missAnalysisBox');
+      if(!box || !OFFICIAL_DB || !OFFICIAL_DB.length) return;
+      const intervals = getMissingIntervals(OFFICIAL_DB).sort((a,b)=>b.gap-a.gap || a.n-b.n);
+      const topMissing = intervals.slice(0, 8);
+      const selectedNums = [...new Set(selectedSets.flat())].sort((a,b)=>a-b);
+      const selectedInfo = getMissingInfo(selectedNums, OFFICIAL_DB).sort((a,b)=>b.gap-a.gap || a.n-b.n);
+      const maxGap = Math.max(...topMissing.map(v => v.gap), 1);
+      const topHtml = topMissing.map(v => `
+        <div class="miss-row">
+          <span class="miss-num">${String(v.n).padStart(2,'0')}</span>
+          <div class="miss-track"><div class="miss-fill" style="width:${Math.max(6, Math.round(v.gap / maxGap * 100))}%"></div></div>
+          <span>${v.gap}회</span>
+        </div>
+      `).join('');
+      const selectedText = selectedInfo.length
+        ? selectedInfo.slice(0, 12).map(v => `${String(v.n).padStart(2,'0')}(${v.gap}회)`).join(', ')
+        : '추천 조합 생성 후 표시됩니다.';
+      box.innerHTML = `
+        <div><strong style="color:var(--gold2);">추천 번호 미출현 간격</strong> · ${selectedText}</div>
+        <div style="margin-top:8px;"><strong style="color:var(--gold2);">전체 장기 미출현 TOP 8</strong></div>
+        <div class="miss-table">${topHtml}</div>
+      `;
+    }
     function runBacktest(requestedRounds = 80){
       const box = document.getElementById('backtestBox');
       if(!box) return;
@@ -608,10 +662,15 @@
       }
 
       const analysisDist = [0,0,0,0,0,0,0];
+      const randomDist = [0,0,0,0,0,0,0];
       let analysisHits = 0;
       let randomHits = 0;
       let totalGames = 0;
       let roundsWithThreePlus = 0;
+      let roundsWithFourPlus = 0;
+      let roundsWithFivePlus = 0;
+      let randomThreePlus = 0;
+      let randomFourPlus = 0;
 
       for(let i=0; i<maxRounds; i++){
         const target = OFFICIAL_DB[i];
@@ -626,13 +685,25 @@
           bestRoundHit = Math.max(bestRoundHit, hit);
           totalGames++;
         });
-        for(let r=0; r<3; r++) randomHits += countHits(makeRandomSet(), target.numbers);
         if(bestRoundHit >= 3) roundsWithThreePlus++;
+        if(bestRoundHit >= 4) roundsWithFourPlus++;
+        if(bestRoundHit >= 5) roundsWithFivePlus++;
+
+        let bestRandomHit = 0;
+        for(let r=0; r<3; r++){
+          const hit = countHits(makeRandomSet(), target.numbers);
+          randomDist[hit]++;
+          randomHits += hit;
+          bestRandomHit = Math.max(bestRandomHit, hit);
+        }
+        if(bestRandomHit >= 3) randomThreePlus++;
+        if(bestRandomHit >= 4) randomFourPlus++;
       }
 
       const avgAnalysis = analysisHits / totalGames;
       const avgRandom = randomHits / totalGames;
       const lift = avgRandom ? ((avgAnalysis - avgRandom) / avgRandom * 100) : 0;
+      const testedRounds = Math.max(1, totalGames / 3);
       const maxDist = Math.max(...analysisDist, 1);
       const distHtml = analysisDist.map((count, hit) => `
         <div class="backtest-bar">
@@ -648,13 +719,18 @@
           <div class="backtest-card"><div class="backtest-label">분석 평균 적중</div><div class="backtest-value">${avgAnalysis.toFixed(2)}개</div></div>
           <div class="backtest-card"><div class="backtest-label">랜덤 평균 적중</div><div class="backtest-value">${avgRandom.toFixed(2)}개</div></div>
           <div class="backtest-card"><div class="backtest-label">랜덤 대비</div><div class="backtest-value">${lift >= 0 ? '+' : ''}${lift.toFixed(1)}%</div></div>
-          <div class="backtest-card"><div class="backtest-label">3개 이상 나온 회차</div><div class="backtest-value">${roundsWithThreePlus}회</div></div>
+          <div class="backtest-card"><div class="backtest-label">테스트 게임 수</div><div class="backtest-value">${totalGames}</div></div>
+        </div>
+        <div class="rank-grid">
+          <div class="rank-chip">5등권 3개 이상<strong>${roundsWithThreePlus}회 / ${testedRounds}회</strong></div>
+          <div class="rank-chip">4등권 4개 이상<strong>${roundsWithFourPlus}회 / ${testedRounds}회</strong></div>
+          <div class="rank-chip">3등권 5개 이상<strong>${roundsWithFivePlus}회 / ${testedRounds}회</strong></div>
+          <div class="rank-chip">랜덤 3개 이상<strong>${randomThreePlus}회</strong></div>
         </div>
         <div class="backtest-bars">${distHtml}</div>
-        <div style="margin-top:10px;color:var(--muted);">※ 이 검증은 과거 성능 측정이며 다음 회차 당첨을 보장하지 않습니다.</div>
+        <div style="margin-top:10px;color:var(--muted);">※ 2등은 보너스 번호까지 맞아야 하므로 여기서는 본번호 적중 기준만 검증합니다.</div>
       `;
     }
-
 
     function overlapCount(a, b){
       return a.filter(n => b.includes(n)).length;
@@ -700,6 +776,8 @@
       }
       candidates.sort((a,b)=>b.score-a.score);
       const top3 = selectDiverseCandidates(candidates, 3);
+
+      renderMissingAnalysis(top3.map(item => item.nums));
 
       top3.forEach((item, i) => {
         html += `
@@ -883,6 +961,7 @@
   </script>
 </body>
 </html>
+
 
 
 
